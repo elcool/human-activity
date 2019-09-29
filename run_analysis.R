@@ -18,9 +18,10 @@ features <- read.delim("UCI_HAR_Dataset\\features.txt", header = FALSE, sep = " 
 
 options(digits = 15)
 
+#reload <- function(){
 ### load train
 subject_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\subject_train.txt", header = FALSE, nrows=limitread, col.names = c("subject_id")))
-x_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\X_train.txt", header = FALSE, nrows=limitread, col.names = features$V2))
+x_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\X_train.txt", header = FALSE, nrows=limitread, col.names = features$V2)) # 4. add labels to large set
 y_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\y_train.txt", header = FALSE, nrows=limitread, col.names = c("activity_id")))
 
 body_acc_x_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\Inertial Signals\\body_acc_x_train.txt", header = FALSE, nrows=limitread))
@@ -37,7 +38,7 @@ total_acc_z_train <- tbl_df(read.table(file="UCI_HAR_Dataset\\train\\Inertial Si
 
 ### load test
 subject_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\subject_test.txt", header = FALSE, nrows=limitread, col.names = c("subject_id")))
-x_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\X_test.txt", header = FALSE, nrows=limitread, col.names = features$V2))
+x_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\X_test.txt", header = FALSE, nrows=limitread, col.names = features$V2)) # 4. add labels to large set
 y_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\y_test.txt", header = FALSE, nrows=limitread, col.names = c("activity_id")))
 
 body_acc_x_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Signals\\body_acc_x_test.txt", header = FALSE, nrows=limitread))
@@ -51,27 +52,37 @@ body_gyro_z_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Sign
 total_acc_x_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Signals\\total_acc_x_test.txt", header = FALSE, nrows=limitread))
 total_acc_y_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Signals\\total_acc_y_test.txt", header = FALSE, nrows=limitread))
 total_acc_z_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Signals\\total_acc_z_test.txt", header = FALSE, nrows=limitread))
-
+#}
 
 ## merging datasets
-mergedSets <- function(){
-    y_activity_train <- merge(y_train, activities)
+#mergedSets <- function(){
+    # 3. adding descriptive activity names
+    y_activity_train <- join(y_train, activities)  # this joins on activity_id
     y_subject_act_train <- cbind(subject_train, y_activity_train)
     train_set <- cbind(y_subject_act_train, x_train)
     
-    y_activity_test <- merge(y_test, activities)
+    y_activity_test <- join(y_test, activities)  # this joins on activity_id
     y_subject_act_test <- cbind(subject_test, y_activity_test)
     test_set <- cbind(y_subject_act_test, x_test)
     
     #body_acc_x <<- rbind(body_acc_x_train, body_acc_x_test)
     #total_acc_x <<- rbind(total_acc_x_train, total_acc_x_test)
     
-    mergedAll <- tbl_df(rbind(train_set, test_set))
-    mergedAll
-}
+    mergedSet <- tbl_df(rbind(train_set, test_set)) %>% select(-activity_id)  # remove redundant column
+    mergedSet
+#}
+
+#extract2 <- function(){
+    names1 <- colnames(mergedSet)
+    wantCols <- names1[grepl("mean|std", names1)]
+    extractedSet <- select(mergedSet, c("subject_id", "activity_name", wantCols))
+#}
+
+#extractedMean_std <- extract2()
 
 
-
+    #5. average of each var for each activity and subject
+    tidy_averages <- extractedSet %>% group_by(subject_id, activity_name) %>% summarise_all(funs(mean))
 
 
 
