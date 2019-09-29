@@ -5,7 +5,7 @@ library(tidyr)
 library(plyr)
 
 ## some global variables for debugging
-limitread = -1    #change to -1 for read all
+limitread = -1    # change to -1 for read all, 50 for sample
 
 starttime <- Sys.time()
 ######
@@ -68,21 +68,21 @@ total_acc_z_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Sign
     #body_acc_x <<- rbind(body_acc_x_train, body_acc_x_test)
     #total_acc_x <<- rbind(total_acc_x_train, total_acc_x_test)
     
-    mergedSet <- tbl_df(rbind(train_set, test_set)) %>% select(-activity_id)  # remove redundant column
-    mergedSet
+    mergedSet <- tbl_df(rbind(train_set, test_set))  # convert to df 
+    #mergedSet
 #}
 
 #extract2 <- function(){
     names1 <- colnames(mergedSet)
     wantCols <- names1[grepl("mean|std", names1)]
-    extractedSet <- select(mergedSet, c("subject_id", "activity_name", wantCols))
+    extractedSet <- select(mergedSet, c("subject_id", "activity_id", "activity_name", wantCols))
 #}
 
 #extractedSet <- extract2()
 
 
     #5. average of each var for each activity and subject
-    tidy_averages <- extractedSet %>% group_by(subject_id, activity_name) %>% summarise_all(funs(mean))
+    tidy_averages <- extractedSet %>% group_by(subject_id, activity_id, activity_name) %>% summarise_all(funs(mean))
     write.table(tidy_averages, file = "ave_by_activity.txt", row.names = FALSE)
     print(tidy_averages)
 
@@ -97,5 +97,5 @@ total_acc_z_test <- tbl_df(read.table(file="UCI_HAR_Dataset\\test\\Inertial Sign
 # test subjects = 30%  (9)
 
 endtime <- Sys.time()
-#print (endtime - starttime)
+print (endtime - starttime)
 
