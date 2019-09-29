@@ -1,7 +1,7 @@
 # human-activity
 
 ## Tidy Data set for Human Activity Recognition Using Smartphones Dataset
-Version 1.0
+Version 1.1.0
 
 
 This tidy data set is derived from the Human Activity Recognition Using Smartphones Dataset.
